@@ -261,9 +261,19 @@ def responder_con_gemma(texto):
         )
 
     full_output = tokenizer.decode(output[0], skip_special_tokens=True)
-    respuesta = full_output[len(prompt):].strip() #devolvemos la respuesta del LLM
-    return respuesta
-    #return respuesta.split("Analiza la señal y genera un informe para el equipo de rescate.:")[-1].strip()
+    #respuesta = full_output[len(prompt):].strip() #devolvemos la respuesta del LLM
+    #return respuesta
+    # Eliminamos el prompt
+    generated = full_output[len(prompt):].strip()
+
+    # Cortamos cuando aparece una segunda etiqueta
+    for tag in ["[VICTIMA]", "[OPERARIO]", "[NO_RELEVANTE]"]:
+        second = generated.find(tag, 1)
+        if second != -1:
+            generated = generated[:second].strip()
+            break
+
+    return generated
 
 # ================= ENDPOINT =================
 @app.route("/upload", methods=["POST"])
