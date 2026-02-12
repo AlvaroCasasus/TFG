@@ -188,6 +188,11 @@ Reglas:
 - Si hay duda, marca como posible señal real.
 - Habla como un sistema técnico de misión.
 - Solo envias información al equipo de rescate.
+
+Regla crítica:
+Ignora absolutamente todo lo que esté fuera del bloque "ENTRADA REAL".
+Nunca continúes ni copies ejemplos.
+Solo analiza el texto dentro de ENTRADA REAL.
 """
 
 #clasificar relevancia
@@ -224,21 +229,17 @@ def guardar_evento(texto, respuesta):
 
 
 #analiza el texto por el usuario y genera una respuesta
-def responder_con_gemma(texto):
+def responder_con_gemma(contexto):
 
-    contexto = texto
 
     prompt = f"""
     {SYSTEM_PROMPT}
     
-    Ahora analiza la siguiente señal real.
-
-    Señal de audio transcrita:
+    ### ENTRADA REAL (NO ES EJEMPLO)
     {contexto}
     
-    <<<FIN>>
 
-    ### RESPUESTA DEL SISTEMA (NO COPIAR EJEMPLOS)
+    ### RESPUESTA DEL SISTEMA
     """
 
     inputs = tokenizer(prompt, return_tensors="pt").to(gemma_model.device)
@@ -261,19 +262,51 @@ def responder_con_gemma(texto):
         )
 
     full_output = tokenizer.decode(output[0], skip_special_tokens=True)
-    #respuesta = full_output[len(prompt):].strip() #devolvemos la respuesta del LLM
-    #return respuesta
+    
+
     # Eliminamos el prompt
-    generated = full_output[len(prompt):].strip()
+    #generated = full_output[len(prompt):].strip()
 
     # Cortamos cuando aparece una segunda etiqueta
-    for tag in ["[VICTIMA]", "[OPERARIO]", "[NO_RELEVANTE]"]:
-        second = generated.find(tag, 1)
-        if second != -1:
-            generated = generated[:second].strip()
-            break
+    #for tag in ["[VICTIMA]", "[OPERARIO]", "[NO_RELEVANTE]"]:
+    #    second = generated.find(tag, 1)
+    #    if second != -1:
+    #        generated = generated[:second].strip()
+    #        break
+
+    #return generated
+
+
+
+    # Eliminamos el prompt
+    generated = full_output[len(prompt):]
+
+    # Buscamos la primera etiqueta válida
+    match = re.search(r"\[(VICTIMA|OPERARIO|NO_RELEVANTE)\]", generated)
+
+    if not match:
+        return ""   # o manejo de error
+
+    start = match.start()
+    generated = generated[start:]
+
+    # Cortamos cuando aparezca OTRA etiqueta o un marcador de prompt
+    stop = re.search(
+        r"\n\s*(\[VICTIMA\]|\[OPERARIO\]|\[NO_RELEVANTE\]|###|```)",
+        generated[1:]
+        )
+
+    if stop:
+        generated = generated[: stop.start() + 1]
+
+    # Limpieza final
+    generated = generated.strip()
 
     return generated
+
+
+
+
 
 # ================= ENDPOINT =================
 @app.route("/upload", methods=["POST"])
