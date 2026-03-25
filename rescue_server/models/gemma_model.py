@@ -37,6 +37,6 @@ def generate(prompt: str) -> str:
             do_sample=True  # consistente con temperature > 1.0
         )
 
-    # ✅ Cortamos por índice de tokens, no por longitud de string
+    # Cortamos por índice de tokens, no por longitud de string
     new_tokens = output[0][prompt_len:]
     return tokenizer.decode(new_tokens, skip_special_tokens=True).strip()

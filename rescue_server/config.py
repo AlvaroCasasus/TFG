@@ -13,3 +13,8 @@ LOG_FILE = "logs_sos.jsonl"
 LOG_MAX_BYTES = 10 * 1024 * 1024  # 10 MB
 AUDIO_MAX_BYTES = 25 * 1024 * 1024  # 25 MB
 ALLOWED_AUDIO_EXTENSIONS = {".ogg", ".wav", ".mp3", ".flac"}
+
+# Robot
+ROBOT_IP = "10.27.41.52"   # cambiarlo a ip robot
+ROBOT_PORT = 8888
+ROBOT_AUDIO_ENDPOINT = "/robot/audio/play"

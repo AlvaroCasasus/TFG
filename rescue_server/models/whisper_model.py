@@ -13,5 +13,14 @@ def get_whisper():
 
 def transcribe(audio_path: str, language: str = "es") -> str:
     model = get_whisper()
-    result = model.transcribe(audio_path, language=language)
+    result = model.transcribe(
+        audio_path,
+        language="es",
+        temperature=0.0,        # completamente determinista
+        best_of=1,              # sin muestreo múltiple
+        beam_size=5,            # búsqueda en haz más exhaustiva
+        no_speech_threshold=0.6, # descarta audio si probabilidad de silencio > 60%
+        compression_ratio_threshold=2.4,  # descarta alucinaciones
+        condition_on_previous_text=False  # cada fragmento independiente
+    )
     return result["text"].strip()
