@@ -10,4 +10,4 @@ def enviar_audio(path_audio):
     print("Respuesta del servidor:", response.json())
 
 # Ejemplo: envía un audio
-enviar_audio("PruebaSonidoRescate6.ogg")
+enviar_audio("audios/PruebaSonidoV2_6.ogg")
